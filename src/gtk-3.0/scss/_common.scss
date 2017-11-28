@@ -1612,6 +1612,14 @@ combobox {
   @extend %linked_vertical:only-child;
 }
 
+@at-root %darker_button {
+  @each $a, $b in ("", "normal"), (":hover", "hover"), (":active, &:checked", "active"), (":disabled", "insensitive"), (":backdrop", "backdrop"), (":backdrop:active, &:backdrop:checked", "backdrop-active"), (":backdrop:disabled", "backdrop-insensitive"), (":backdrop:disabled:active, :backdrop:disabled:checked", "backdrop-insensitive-active") {
+    &#{$a} {
+      @include button($b, $dark_base_color, $light_fg_color);
+    }
+  }
+}
+
 /************
  * Toolbars *
  ************/
@@ -1620,13 +1628,21 @@ combobox {
   padding: 2px;
 }
 
-toolbar {
+toolbar, .toolbar {
   @extend %toolbar;
 
   &.horizontal:not(.inline-toolbar) {
-    background-color: if($darker == true, $dark_menu_color, $menu_color);
+    // background-color: if($darker == true, $dark_menu_color, $menu_color);
 
     @if $darker == true {
+      &:backdrop {
+        background: $dark_backdrop_base_color;
+
+        label {
+          color: $light_backdrop_text_color;
+        }
+      }
+
       border-image: image($dark_menu_color);
 
       button {
@@ -1639,47 +1655,61 @@ toolbar {
         }
       }
 
-      toolbutton > button {
-        @include button(undecorated);
-      }
-
-      scale {
-        highlight {
-          background-color: $dark_adwaita_blue;
-        }
-
-        trough {
-          border: 1px solid $dark_borders_color;
-          background-color: $dark_dark_fill;
-
-          &:disabled {
-            background-color: mix($dark_bg_color, $dark_base_color, 60%);
-          }
-
-          &:backdrop {
-            background-color: $dark_backdrop_dark_fill;
-            border-color: $dark_backdrop_borders_color;
-          }
-        }
-
-        @each $a, $b in ("", "normal-alt"), (":hover", "hover-alt"), (":active, &:checked", "active"), (":disabled", "insensitive"), (":backdrop", "backdrop"), (":backdrop:active, &:backdrop:checked", "backdrop-active"), (":backdrop:disabled", "backdrop-insensitive"), (":backdrop:disabled:active, :backdrop:disabled:checked", "backdrop-insensitive-active") {
-          slider {
-            &#{$a} {
-              @if $b == normal or $b == hover-alt {
-                @include button($b, $dark_base_color, $light_fg_color, $edge: $shadow_color);
-              }
-              @else {
-                @include button($b, $dark_base_color, $light_fg_color);
-              }
-            }
+      toolbutton > button, button.flat {
+        &, &:backdrop {
+          &, &:disabled {
+            @extend %undecorated_button;
           }
         }
       }
     }
 
+    //
+    //   scale {
+    //     highlight {
+    //       background-color: $dark_adwaita_blue;
+    //     }
+    //
+    //     trough {
+    //       border: 1px solid $dark_borders_color;
+    //       background-color: $dark_dark_fill;
+    //
+    //       &:disabled {
+    //         background-color: mix($dark_bg_color, $dark_base_color, 60%);
+    //       }
+    //
+    //       &:backdrop {
+    //         background-color: $dark_backdrop_dark_fill;
+    //         border-color: $dark_backdrop_borders_color;
+    //       }
+    //     }
+    //
+    //     @each $a, $b in ("", "normal-alt"), (":hover", "hover-alt"), (":active, &:checked", "active"), (":disabled", "insensitive"), (":backdrop", "backdrop"), (":backdrop:active, &:backdrop:checked", "backdrop-active"), (":backdrop:disabled", "backdrop-insensitive"), (":backdrop:disabled:active, :backdrop:disabled:checked", "backdrop-insensitive-active") {
+    //       slider {
+    //         &#{$a} {
+    //           @if $b == normal or $b == hover-alt {
+    //             @include button($b, $dark_base_color, $light_fg_color, $edge: $shadow_color);
+    //           }
+    //           @else {
+    //             @include button($b, $dark_base_color, $light_fg_color);
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
+
     toolitem {
       label {
         color: if($darker == true, $light_fg_color, $fg_color);
+      }
+    }
+  }
+
+  toolbutton > button {
+    &, &:backdrop {
+      &:disabled {
+        -gtk-icon-effect: dim;
       }
     }
   }
@@ -1802,15 +1832,11 @@ headerbar {
   &:backdrop {
     //box-shadow: inset 0 1px $top_hilight;
     transition: $backdrop_transition;
+  }
 
-    &, label.title, label.subtitle {
-      @if $variant == "light" or $variant == "dark" {
-        color: $backdrop_fg_color;
-      }
-
-      @if $darker == true {
-        color: $light_backdrop_fg_color;
-      }
+  label {
+    &:backdrop {
+      color: if($darker == true, $light_backdrop_fg_color, $backdrop_fg_color);
     }
   }
 
@@ -2482,7 +2508,9 @@ menubar,
     }
 
     &:backdrop {
-      color: if($darker == true, $light_backdrop_fg_color, $backdrop_fg_color);
+      label {
+        color: if($darker == true, $light_backdrop_fg_color, $backdrop_fg_color);
+      }
     }
   }
 }
@@ -2975,6 +3003,7 @@ notebook {
  * Scrollbars *
  **************/
 scrollbar {
+  margin: -1px;
   min-width: 15px;
 
   $_slider_min_length: 40px;
@@ -4557,6 +4586,30 @@ filechooser {
 
   #pathbarbox {
     border-bottom: 1px solid $bg_color;
+
+    button {
+      @include button(normal);
+
+      &:hover {
+        @include button(hover);
+      }
+
+      &:active {
+        @include button(active);
+      }
+
+      &:disabled {
+        @include button(insensitive);
+      }
+
+      &:backdrop {
+        @include button(backdrop);
+      }
+
+      &:backdrop:disabled {
+        @include button(backdrop-insensitive);
+      }
+    }
   }
 }
 
@@ -4575,8 +4628,10 @@ filechooserbutton:drop(active) {
 }
 
 treeview.sidebar {
-  &:selected {
-    @extend %selected_items_darker;
+  @if $darker == true {
+    &:selected {
+      @extend %selected_items_darker;
+    }
   }
 }
 
@@ -4693,8 +4748,10 @@ placessidebar {
     &:selected {
       color: $selected_fg_color;
 
-      @extend %selected_items_darker;
-      
+      @if $darker == true {
+        @extend %selected_items_darker;
+      }
+
       @if $darker == true {
         button {
           &:hover {
@@ -5320,12 +5377,7 @@ decoration {
 
 // Window Close button
 button.titlebutton {
-  @extend %button_basic;
-
-  @extend %button_basic.flat;
-
-  @include _button_text_shadow($fg_color, $bg_color, true);
-
+  // TODO: do some serious restructuring, holy crap
   .selection-mode & {
     @extend %button.flat.suggested-action;
 
@@ -5336,61 +5388,107 @@ button.titlebutton {
     -gtk-icon-shadow: none;
   }
 
-  &.close, &.maximize, &.minimize {
-    color: $fg_color;
+  @if $window_button_type == "vanilla" {
+    @extend %button_basic;
 
-    @if $window_button_type == "vanilla" {
-      transition-duration: 150ms;
+    @extend %button_basic.flat;
 
-      @if $darker == true {
-        @include button(normal, $dark_bg_color, $light_fg_color);
-        @include button(undecorated);
+    @include _button_text_shadow($fg_color, $bg_color, true);
 
-        &:hover {
-          @include button(hover, $dark_bg_color, $light_fg_color);
-        }
+    transition-duration: 150ms;
+
+    @if $darker == true {
+      @include button(normal, $dark_bg_color, $light_fg_color);
+      @include button(undecorated);
+
+      &:hover {
+        @include button(hover, $dark_bg_color, $light_fg_color);
+      }
+
+      &:active {
+        @include button(active, $dark_bg_color, $light_fg_color);
+      }
+
+      &:backdrop {
+        transition: $backdrop_transition;
+
+        @include button(backdrop, $dark_bg_color, $light_fg_color);
 
         &:active {
-          @include button(active, $dark_bg_color, $light_fg_color);
+          @include button(backdrop-active, $dark_bg_color, $light_fg_color);
         }
       }
     }
-    @else if $window_button_type != "vanilla" {
-      color: transparent;
-      border: 0;
-      border-image: none;
-      box-shadow: none;
-      background-position: center;
-      background-repeat: no-repeat;
+  }
+  @else if $window_button_type != "vanilla" {
+    $unmaximize: ":not(.close):not(.maximize):not(.minimize)";
 
-      @if $window_button_type == "vertex" {
-        background-image: -gtk-scaled(url("assets/window-buttons/vertex/titlebutton#{$window_asset_suffix}.png"), url("assets/window-buttons/vertex/titlebutton#{$window_asset_suffix}@2.png"));
+    &, &:hover, &:active {
+      @extend %undecorated_button;
 
-        &:backdrop {
-          background-image: -gtk-scaled(url("assets/window-buttons/vertex/titlebutton-backdrop#{$window_asset_suffix}.png"), url("assets/window-buttons/vertex/titlebutton-backdrop#{$window_asset_suffix}@2.png"));
-        }
+      &, image {
+        color: transparent;
+      }
+    }
 
-        @each $type in "close" "minimize" "maximize" {
-          @each $state in "hover" "active" {
+    border-style: none;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    @if $window_button_type == "vertex" {
+      background-image: -gtk-scaled(url("assets/window-buttons/titlebutton#{$window_asset_suffix}.png"), url("assets/window-buttons/titlebutton#{$window_asset_suffix}@2.png"));
+
+      &:backdrop {
+        background-image: -gtk-scaled(url("assets/window-buttons/titlebutton-backdrop#{$window_asset_suffix}.png"), url("assets/window-buttons/titlebutton-backdrop#{$window_asset_suffix}@2.png"));
+      }
+
+      @each $type in "close", "minimize", "maximize" {
+        @each $state in "hover" "active" {
+          @if $type == "maximize" {
+            &.#{$type}:#{$state}, &#{$unmaximize}:#{$state} {
+              background-image: -gtk-scaled(url("assets/window-buttons/titlebutton-#{$type}-#{$state}#{$window_asset_suffix}.png"), url("assets/window-buttons/titlebutton-#{$type}-#{$state}#{$window_asset_suffix}@2.png"));
+              transition-duration: 150ms;
+            }
+          }
+          @else {
             &.#{$type}:#{$state} {
-              background-image: -gtk-scaled(url("assets/window-buttons/vertex/titlebutton-#{$type}-#{$state}#{$window_asset_suffix}.png"), url("assets/window-buttons/vertex/titlebutton-#{$type}-#{$state}#{$window_asset_suffix}@2.png"));
+              background-image: -gtk-scaled(url("assets/window-buttons/titlebutton-#{$type}-#{$state}#{$window_asset_suffix}.png"), url("assets/window-buttons/titlebutton-#{$type}-#{$state}#{$window_asset_suffix}@2.png"));
               transition-duration: 150ms;
             }
           }
         }
       }
+    }
 
-      @if $window_button_type == "osx" {
-        &:backdrop {
-          background-image: -gtk-scaled(url("assets/window-buttons/osx/titlebutton-unfocused#{$window_asset_suffix}.png"), url("assets/window-buttons/osx/titlebutton-unfocused#{$window_asset_suffix}@2.png"));
-        }
+    @if $window_button_type == "osx" {
+      &:backdrop {
+        background-image: -gtk-scaled(url("assets/window-buttons/titlebutton-unfocused#{$window_asset_suffix}.png"), url("assets/window-buttons/titlebutton-unfocused#{$window_asset_suffix}@2.png"));
+      }
 
-        @each $k in "close", "maximize", "minimize" {
-          @each $l, $m in ("", ""), (":backdrop", "-backdrop"), (":hover", "-hover"), (":active", "-active") {
-            &.#{$k}#{$l} {
-              background-image: -gtk-scaled(url("assets/window-buttons/osx/titlebutton-#{$k}#{$m}#{$window_asset_suffix}.png"), url("assets/window-buttons/osx/titlebutton-#{$k}#{$m}#{$window_asset_suffix}@2.png"));
+      @each $type in "close", "maximize", "minimize" {
+        @each $l, $m in ("", ""), (":backdrop", "-backdrop"), (":hover", "-hover"), (":active", "-active") {
+          @if $type == "maximize" {
+            &.#{$type}#{$l}, &#{$unmaximize}#{$l} {
               transition: none;
-              box-shadow: none;
+
+              @if $m == "-backdrop" {
+                background-image: -gtk-scaled(url("assets/window-buttons/titlebutton-#{$type}#{$m}#{$window_asset_suffix}.png"), url("assets/window-buttons/titlebutton-#{$type}#{$m}#{$window_asset_suffix}@2.png"));
+              }
+              @else {
+                background-image: -gtk-scaled(url("assets/window-buttons/titlebutton-#{$type}#{$m}.png"), url("assets/window-buttons/titlebutton-#{$type}#{$m}@2.png"));
+              }
+            }
+          }
+          @else {
+            &.#{$type}#{$l} {
+              transition: none;
+
+              @if $m == "-backdrop" {
+                background-image: -gtk-scaled(url("assets/window-buttons/titlebutton-#{$type}#{$m}#{$window_asset_suffix}.png"), url("assets/window-buttons/titlebutton-#{$type}#{$m}#{$window_asset_suffix}@2.png"));
+              }
+              @else {
+                background-image: -gtk-scaled(url("assets/window-buttons/titlebutton-#{$type}#{$m}.png"), url("assets/window-buttons/titlebutton-#{$type}#{$m}@2.png"));
+              }
             }
           }
         }

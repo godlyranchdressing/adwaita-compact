@@ -892,9 +892,17 @@ StScrollBar {
   font-weight: bold;
   height: 1.86em;
 
+  &, &.solid {
+    background-gradient-direction: none;
+  }
+
   @if $variant == "light" {
     background-color: transparent;
     border-image: url("assets/panel.png");
+
+    .panel-button {
+      text-shadow: none;
+    }
   }
 
   &.lock-screen,

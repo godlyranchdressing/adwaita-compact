@@ -1,3 +1,11 @@
+// Nautilus
+window.nautilus-desktop-window box.searchbar-container.vertical > searchbar {
+  // get rid of white line on desktop
+  &, &:backdrop {
+    background-color: transparent;
+  }
+}
+
 // Builder
 
 window.workbench {
@@ -64,4 +72,15 @@ window.workbench {
 viewport.frame > list.tweak-categories {
   background-image: image(if($darker == true, $dark_sidebar_bg_color, $sidebar_bg_color));
   color: if($darker == true, $light_fg_color, $fg_color);
+
+  label:backdrop {
+    color: if($darker == true, $light_backdrop_fg_color, $backdrop_fg_color);
+  }
+}
+
+// Rhythmbox
+
+.primary-toolbar button.raised {
+  // toolbar buttons have a 1px margin
+  margin: 0px;
 }
